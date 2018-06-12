@@ -40,6 +40,8 @@ db.collection('Users').insertOne({
   console.log(result.ops[0]._id.getTimestamp());
 })
 
+
+
 db.close();
 
 }); // MongoClient.connect takes parameters of 1st one as url where the DB lives. E.g. AWS or Heroku. 2nd one is callback function to help understand if passed or failed.

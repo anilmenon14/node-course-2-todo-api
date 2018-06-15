@@ -33,6 +33,16 @@ todo.save().then((doc)=> {
 
 })
 
+app.get('/todos',(req,res) => {
+    Todo.find().then((todos)=> {
+res.send({todos}); // by using this notation , you are asking for response as an object with response text as just one of the returns, you can add more into the object
+
+    },(e) => {
+      res.status(400).send(err);
+    })
+
+})
+
 app.listen(3000,() => {
   console.log('Started on port 3000');
 })

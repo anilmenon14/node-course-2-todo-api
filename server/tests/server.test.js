@@ -6,8 +6,17 @@ const {app} = require('./../server')
 const {Todo} = require('./../models/todo')
 const {User} = require('./../models/user')
 
+
+const todos = [{
+  text : 'First test todo'
+},{
+  text : 'Second test todo'
+}]
+
 beforeEach((done) => {
-  Todo.remove({}).then(() => done());
+  Todo.remove({}).then(() => {; // wiping DB clean
+  return Todo.insertMany(todos)  // adding 2 records from todos mentioned
+}).then(() => done());
 })
 
 describe('**Testing posting using POST /todos', ()=> {
@@ -25,7 +34,7 @@ var text = 'Test todo text'
     if (err) {
       return done(err);
     }
-    Todo.find().then((todos) => {
+    Todo.find({text:text}).then((todos) => {  // searching only for param of text as the variable text defined. this way test passes despite beforeEach adding 2 more documents
       expect(todos.length).toBe(1);
       expect(todos[0].text).toBe(text);
       done();
@@ -43,12 +52,38 @@ it('should not create todo with invalid body data',(done) => {
          return done(err);
        }
        Todo.find().then((todos) => {
-         expect(todos.length).toBe(0);
+         expect(todos.length).toBe(2);
          done();
        }).catch((e)=> done(e));
 
      });
 
 });
+
+});
+
+
+//GET todos testing
+
+describe('**Testing retrieving using GET /todos',() => {
+
+it('Should retrieve data back',(done) => {
+
+
+request(app)
+.get('/todos')
+.expect(200)
+.expect((res) => {
+  expect(res.body.todos.length).toBe(2)
+})
+.end((err,res) => {
+  if (err) {
+    return done(err);
+  }
+  return done();
+});
+
+
+})
 
 });

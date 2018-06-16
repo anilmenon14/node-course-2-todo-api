@@ -1,6 +1,7 @@
 //Library Imports
 var express = require('express');
 var bodyParser = require('body-parser') // Lib used to convert string to JSON without needing to do additional steps
+const {ObjectID} = require('mongodb');
 
 
 // Local Imports
@@ -14,6 +15,8 @@ var {User} = require('./models/user');
 var app = express();
 
 app.use(bodyParser.json())
+
+//  POST route to receive a request to upload to database
 
 app.post( '/todos', (req,res) => {
 var todo = new Todo (
@@ -33,15 +36,34 @@ todo.save().then((doc)=> {
 
 })
 
+// GET route to pull up ALL records from the database
+
 app.get('/todos',(req,res) => {
     Todo.find().then((todos)=> {
 res.send({todos}); // by using this notation , you are asking for response as an object with response text as just one of the returns, you can add more into the object
 console.log('Retrieved successfully');
-    },(e) => {
+    },(err) => {
       res.status(400).send(err);
     })
 
 })
+
+// GET record by ID
+
+app.get('/todos/:id',(req,res)=> {
+  var id = req.params.id
+  if (!ObjectID.isValid(id)){
+    res.status(404).send()
+  }
+  Todo.findById(id).then((todo) => {
+    if (!todo) {
+      return res.status(404).send();
+    }
+    res.send({todo});
+  }).catch((e) => {
+    res.status(400).send(e)
+  });
+});
 
 app.listen(3000,() => {
   console.log('Started on port 3000');

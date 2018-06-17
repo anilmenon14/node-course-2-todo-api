@@ -3,7 +3,6 @@
 if (process.env.PORT === undefined && process.env.NODE_ENV != "test")
 {
 process.env.NODE_ENV = "development";
-console.log('BOOOOOYYYAAAAAAAAAA againnnn!!');
 }
 
 var env = process.env.NODE_ENV || 'development';

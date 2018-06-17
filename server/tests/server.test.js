@@ -137,7 +137,7 @@ request(app)
 
 })
 
-//Scenario 3 : Fsil case with valid ID that doesn't exist in DB
+//Scenario 3 : Fail case with valid ID that doesn't exist in DB
 
 it ('Should not retrieve data back and show status 404 for valid ID not existing in DB',(done) => {
 
@@ -155,8 +155,72 @@ request(app)
   return done();
 });
 
-})
+});
+
+});
+
+// DELETE todos/:id test cases
+
+describe ("** Testing for deleting todos using IDs ",()=> {
 
 
+
+// Scenaio 1 : It should remove a todos
+
+it('Should remove a todo if valid ID provided which exists in DB', (done)=> {
+
+var hexID = todos[0]._id.toHexString();
+
+  request(app)
+  .delete('/todos/'+hexID)
+  .expect(200)
+  .expect((res)=> {
+    expect(res.body.todo.text).toBe(todos[0].text)
+  })
+  .end((err,res) => {
+    if (err){
+      return done(err);
+    }
+    Todo.findById(hexID).then((todo) => {
+      expect(todo).toNotExist();
+      done();
+
+    }).catch((e)=> done(e));
+  });
+
+
+
+});
+// Scenario 2 : It should return 404 if todo not found
+it('Should return 404 if valid ID provided and todo not found', (done)=> {
+  fail_id = new ObjectID();
+
+
+  request(app)
+  .delete('/todos/'+fail_id.toHexString())
+  .expect(404)
+  .end((err,res) => {
+    if (err){
+      return done(err);
+    }
+    return done();
+  });
+
+});
+// Scenario 3 : It should return 404 if id is invalid
+it('Should return 404 if invalid ID provided', (done)=> {
+
+
+    request(app)
+    .delete('/todos/'+todos[0]._id.toHexString()+"11111")
+    .expect(404)
+    .end((err,res) => {
+      if (err){
+        return done(err);
+      }
+      return done();
+    });
+
+});
 
 })

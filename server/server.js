@@ -1,7 +1,8 @@
 //Library Imports
-var express = require('express');
-var bodyParser = require('body-parser') // Lib used to convert string to JSON without needing to do additional steps
+const express = require('express');
+const bodyParser = require('body-parser') // Lib used to convert string to JSON without needing to do additional steps
 const {ObjectID} = require('mongodb');
+const _ = require('lodash') ; // using for update routes , i.e. for PATCH
 
 
 // Local Imports
@@ -89,14 +90,45 @@ Todo.findByIdAndRemove(id).then((todo) => {
       return res.status(200).send({todo})
 
 }).catch((e)=> res.status(400).send())
-
-      //if  no doc, send 404
-      //if doc, send doc back with 404
+});
 
 
+//Update using PATCH HTTP calls
 
 
-})
+app.patch('/todos/:id', (req,res) => {
+
+var id = req.params.id;
+var body = _.pick(req.body,['text','completed']);  // This lodash function helps define which fields can be updated by user using HTTP calls . Limited to text and completed status. Does not allow 'completedAt' to be changed.
+
+if (!ObjectID.isValid(id)){
+  return res.status(404).send()
+}
+
+if (_.isBoolean(body.completed) && body.completed) {
+  body.completedAt = new Date().getTime();
+} else {
+  body.completed = false;
+  body.completedAt  = null;
+};
+
+// Can also use findByIdAndUpdate which takes id directly as first param
+Todo.findOneAndUpdate(
+     {_id : id}
+    ,{$set :body}
+    ,{new: true} // Option required to ensure updated one is returned
+).then((todo) => {
+      if (!todo) {
+        return res.status(404).send()
+      }
+      return res.status(200).send({todo})
+
+}).catch((e) => console.log(e));
+
+
+});
+
+
 
 // App listen setup
 

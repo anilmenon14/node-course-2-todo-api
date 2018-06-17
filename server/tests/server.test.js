@@ -13,7 +13,9 @@ const todos = [{
   text : 'First test todo'
 },{
   _id: new ObjectID(),
-  text : 'Second test todo'
+  text : 'Second test todo',
+  completed: true,
+  completedAt : 1224838373,
 }]
 
 
@@ -224,3 +226,101 @@ it('Should return 404 if invalid ID provided', (done)=> {
 });
 
 })
+
+
+// PATCH todos/:id test cases
+
+describe("** Testing updates using PATCH when passing IDs",() => {
+
+it ('Should return status 200 and update the value ',(done) => {
+
+var hexID = todos[0]._id.toHexString();
+text = "Hello, this is updated",
+completed = true;
+
+
+request(app)
+.patch('/todos/'+hexID)
+.send({text,completed})
+.expect(200)
+.end((err,res) =>{
+  if (err){
+    return done(err);
+  }
+  Todo.findById(hexID).then((todo)=> {
+    expect(text).toBe(todo.text);
+    expect(todo.completed).toBe(true);
+    expect(typeof todo.completedAt).toBe('number');
+    done()
+  })
+});
+});
+
+
+it ('Should set completedAt as null if completed==false ',(done) => {
+
+var hexID = todos[1]._id.toHexString();
+text = "Hello, this is updated"
+completed = false;
+
+request(app)
+.patch('/todos/'+hexID)
+.send({text,completed})
+.expect(200)
+.end((err,res) =>{
+  if (err){
+    return done(err);
+  }
+  Todo.findById(hexID).then((todo)=> {
+    expect(text).toBe(todo.text);
+    expect(todo.completed).toBe(false);
+    expect(todo.completedAt).toBe(null);
+    return done()
+  })
+});
+
+
+});
+
+
+
+it ('Should return 404 if valid ID provided and todo not found ',(done) => {
+  fail_id = new ObjectID();
+  text = "Hello, this is updated"
+
+  request(app)
+  .patch('/todos/'+fail_id.toHexString())
+  .send({text})
+  .expect(404)
+  .end((err,res) =>{
+    if (err){
+      return done(err);
+    }
+    return done();
+    })
+  });
+
+
+
+it ('Should return 404 if invalid ID provided ',(done) => {
+
+hexID = todos[0]._id.toHexString();
+text = "Hello, invalid testing";
+
+request(app)
+.patch('/todos/'+hexID+"1111111")
+.send({text})
+.expect(404)
+.end((err,res)=> {
+  if (err){
+    return done(err);
+  }
+  return done();
+});
+
+});
+
+
+
+
+});

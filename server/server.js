@@ -6,6 +6,7 @@ const _ = require('lodash') ; // using for update routes , i.e. for PATCH
 
 
 // Local Imports
+require('./config/config') //dev,prod,test DB connection settings in config.js file
 var {mongoose} = require('./db/mongoose')
 // Above is deconstructed usage from ES6 which uses mongoose method from the library and assigns to same named mongoose module in this file
 // i.e. equivalent to mongoose = require('./db/mongoose').mongoose
@@ -13,8 +14,9 @@ var {Todo} = require('./models/todo');
 var {User} = require('./models/user');
 
 
+
 var app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT;
 
 app.use(bodyParser.json())
 

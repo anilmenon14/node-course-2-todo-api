@@ -8,10 +8,11 @@ const _ = require('lodash') ; // using for update routes , i.e. for PATCH
 // Local Imports
 require('./config/config') //dev,prod,test DB connection settings in config.js file
 var {mongoose} = require('./db/mongoose')
-// Above is deconstructed usage from ES6 which uses mongoose method from the library and assigns to same named mongoose module in this file
-// i.e. equivalent to mongoose = require('./db/mongoose').mongoose
+var {authenticate} = require('./middleware/authenticate')
 var {Todo} = require('./models/todo');
 var {User} = require('./models/user');
+// Above is deconstructed usage from ES6 which uses mongoose method from the library and assigns to same named mongoose module in this file
+// i.e. equivalent to mongoose = require('./db/mongoose').mongoose
 
 
 
@@ -149,6 +150,15 @@ user.save().then((users)=>{
   res.status(400).send(e);
   console.log('Unable to post the message');
 });
+
+});
+
+
+//Get User with token authentication
+// reusable function 'authenticate' created and used below as middleware. Placed in authenticate.js in middleware
+app.get('/users/me', authenticate, (req,res) => {
+
+res.send(req.user)
 
 });
 

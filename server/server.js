@@ -131,6 +131,28 @@ Todo.findOneAndUpdate(
 });
 
 
+//Add User with email address
+
+app.post('/users',(req,res) => {
+
+
+var body = _.pick(req.body,['first_name','last_name','email_address','password']); // pick out the mentioned fields for processing only
+
+var user = new User(body);
+
+user.save().then((users)=>{
+  return users.generateAuthToken(); // Calling function defined in UserSchema
+  // res.status(200).send(users);
+}).then((token)=> {
+  res.header('x-auth',token).send(user) // This 'user' variable is coming from the one defined above
+}).catch((e)=> {
+  res.status(400).send(e);
+  console.log('Unable to post the message');
+});
+
+});
+
+
 
 // App listen setup
 

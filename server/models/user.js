@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const validator = require('validator'); // npm lib with several inbuilt validators
 const jwt = require('jsonwebtoken');
 const _ = require('lodash');
+const bcrypt = require('bcryptjs');
 
 // Using Schema mongoose method to be able to add methods onto the model created. Cannot be done using mongoose.model alone.
 var UserSchema = new mongoose.Schema({
@@ -98,8 +99,30 @@ UserSchema.statics.findByToken = function (token) {
     return _.pick(user, ['_id','first_name','last_name','email_address']);
   })
 
+};
 
-}
+// Mongoose Middleware for password hashing
+// pre can be used to manipulate data before an action. Here the data can be altered before 'save' is called to commit. Hence password can be hashed if the password field is being modified by the POST/PATCH reqeust
+
+UserSchema.pre('save', function(next) {
+  var user = this;
+
+  if (user.isModified('password')) {
+
+    bcrypt.genSalt(10, (err,salt)=> {
+      bcrypt.hash(user.password,salt,(err,hash) =>{
+        user.password = hash;
+        next();
+      })
+    })
+
+  } else {
+    next();
+  };
+
+})
+
+
 
 //Model, i.e. schema definition below
 //Table name is User , however mongooose will lowercase it and pluralize , hence expect name to be 'users' in Robomongo

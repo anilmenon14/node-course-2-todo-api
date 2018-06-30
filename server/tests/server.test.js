@@ -6,25 +6,15 @@ const {ObjectID} = require('mongodb');
 const {app} = require('./../server')
 const {Todo} = require('./../models/todo')
 const {User} = require('./../models/user')
+const {todos,populateTodos,users,populateUsers} = require('./seed/seed')
 
 
-const todos = [{
-  _id: new ObjectID(),
-  text : 'First test todo'
-},{
-  _id: new ObjectID(),
-  text : 'Second test todo',
-  completed: true,
-  completedAt : 1224838373,
-}]
 
 
 // This function will be called before each of the test cases. If you need prereqs to be done before each test, this can be used
-beforeEach((done) => {
-  Todo.remove({}).then(() => {; // wiping DB clean
-  return Todo.insertMany(todos)  // adding 2 records from todos mentioned
-}).then(() => done());
-})
+beforeEach(populateUsers);
+beforeEach(populateTodos);
+
 
 //POST todos testing
 
@@ -320,7 +310,107 @@ request(app)
 
 });
 
-
-
-
 });
+
+
+describe ('Testing for GET /users/me route',() => {
+
+it('should return user if authenticated ',(done) => {
+
+request(app)
+.get('/users/me')
+.set('x-auth',users[0].tokens[0].token)
+.expect(200)
+.expect((res) => {
+  expect(res.body._id).toBe(users[0]._id.toHexString());
+  expect(res.body.email_address).toBe(users[0].email_address);
+}).end(done);
+
+
+});// end of test case 1 in GET users/me
+
+it('should return 401 if not authenticated',(done) => {
+  request(app)
+  .get('/users/me')
+  .expect(401)
+  .expect((res) => {
+    expect(res.body._id).toEqual(null);
+    expect(res.body.email_address).toEqual(null);
+  }).end(done);
+});// end of test case 2 in GET users/me
+
+}); // end of describe GET /users/me
+
+
+describe('Testing for POST /users route', () => {
+
+it('should create a user',(done)=>{
+
+  var first_name = "Mike";
+  var last_name = "Mangini";
+  var email_address = "mm@dt.com";
+  var password = "dt4life"
+
+  request(app)
+  .post('/users')
+  .send({first_name,last_name,email_address,password})
+  .expect(200)
+  .expect((res) => {
+    expect(res.headers['x-auth']).toExist();
+    expect(res.body._id).toExist();
+    expect(res.body.email_address).toEqual(email_address);
+  }).end((err) => {
+    if (err) {
+      return done(err)
+    }
+    User.findOne({email_address}).then((user) => {
+      expect(user).toExist();
+      expect(user.password).toNotBe(password); //password should not match since they are hasheds
+      done();
+    });
+
+  });
+});// end of test case 1 in POST users
+
+
+it('should return validation errros if request invalid ',(done)=>{
+
+  var first_name = "Mike";
+  var last_name = "Mangini";
+  var email_address = "mmdt.com";
+  var password = "dt4life"
+
+  request(app)
+  .post('/users')
+  .send({first_name,last_name,email_address,password})
+  .expect(400)
+  .expect((res) => {
+    expect(res.headers['x-auth']).toNotExist();
+    expect(res.body._id).toBe(undefined);
+    expect(res.body.email_address).toBe(undefined);
+  }).end(done);
+
+
+});// end of test case 2 in POST users
+it('should not create user if email is in use',(done)=>{
+
+  var first_name = "Mike";
+  var last_name = "Mangini";
+  var email_address = users[0].email_address;
+  var password = "dt4life"
+
+  request(app)
+  .post('/users')
+  .send({first_name,last_name,email_address,password})
+  .expect(400)
+  .expect((res) => {
+    expect(res.headers['x-auth']).toNotExist();
+    expect(res.body._id).toBe(undefined);
+    expect(res.body.email_address).toBe(undefined);
+  }).end(done);
+
+
+});// end of test case 3 in POST users
+it('should pass always',(done)=>{done()});// end of test case 4 in POST users
+
+}); // end of describe POST /users

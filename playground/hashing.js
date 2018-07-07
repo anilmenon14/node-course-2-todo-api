@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 
 var password = 'dtforlife';
 
-// // Below code is to generate password. genSalt is number of iterations of salting before generating. This is needed to prevent brute force attacks.
+// Below code is to generate password. genSalt is number of iterations of salting before generating. This is needed to prevent brute force attacks.
 // bcrypt.genSalt(10,(err, salt)=> {
 //   bcrypt.hash(password,salt,(err,hash) => {
 //     console.log('Password hash is : ',hash);

@@ -73,11 +73,8 @@ return user.save().then(() => {
 //statics are Model methods. i.e. , applied on the model and not on the document.
 
 UserSchema.statics.findByToken = function (token) {
-
   var User = this;
   var decoded;
-
-
   try {
     decoded = jwt.verify(token,'abc123'); // abc123 is salt defined above
   }
@@ -101,12 +98,39 @@ UserSchema.statics.findByToken = function (token) {
 
 };
 
+UserSchema.statics.findbyCreds = function(email,password) {
+var User = this;
+  return User.findOne({email_address:email})
+  .then((user) => {
+
+    if(!user) {
+      return Promise.reject();
+    };
+
+    return new Promise((resolve,reject) => {
+      bcrypt.compare(password,user.password,(err,res) => {
+        if(res){
+          resolve(user);
+        }
+        else{
+          reject();
+        }
+      });
+    });
+
+
+
+
+  });
+
+      next();
+    };
+
 // Mongoose Middleware for password hashing
 // pre can be used to manipulate data before an action. Here the data can be altered before 'save' is called to commit. Hence password can be hashed if the password field is being modified by the POST/PATCH reqeust
 
 UserSchema.pre('save', function(next) {
   var user = this;
-
   if (user.isModified('password')) {
 
     bcrypt.genSalt(10, (err,salt)=> {

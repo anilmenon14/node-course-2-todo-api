@@ -3,6 +3,7 @@ const express = require('express');
 const bodyParser = require('body-parser') // Lib used to convert string to JSON without needing to do additional steps
 const {ObjectID} = require('mongodb');
 const _ = require('lodash') ; // using for update routes , i.e. for PATCH
+const bcrypt = require('bcryptjs');// used for password hashing and compare
 
 
 // Local Imports
@@ -155,10 +156,25 @@ user.save().then((users)=>{
 
 
 //Get User with token authentication
-// reusable function 'authenticate' created and used below as middleware. Placed in authenticate.js in middleware
+// reusable function 'authenticate' created and used below as middleware. Placed in authenticate.js in middleware, which will check if token passed exists
 app.get('/users/me', authenticate, (req,res) => {
 
 res.send(req.user)
+
+});
+
+// POST /users/login (email,password)
+
+app.post('/users/login', (request,response)=> {
+User.findbyCreds(request.body.email_address,request.body.password).then((user) => {
+
+  return user.generateAuthToken().then((token)=> {
+    response.header('x-auth',token).send(user); // Calling function defined in UserSchema
+  // res.status(200).send(users);
+});
+
+}).catch((e) => {response.status(403).send('Error. User does not exist')})
+
 
 });
 

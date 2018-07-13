@@ -178,6 +178,20 @@ User.findbyCreds(request.body.email_address,request.body.password).then((user) =
 
 });
 
+// DELETE token /users/me/token, i.e. when logging out
+// use 'authenticate' since user needs to be logged in to be logged out
+
+
+app.delete('/users/me/token', authenticate, (req, res) => {
+  var user = new User(req.user);
+  // console.log(user1 instanceof User ); // will return true indicating it is instance of User model
+  // console.log(req.user instanceof User); // This one returns false indicating instance methods will throw errors
+  user.removeToken(req.token).then(() => {
+    res.status(200).send('Logged out successfully');
+  }, () => {
+    res.status(400).send();
+  });
+});
 
 
 // App listen setup

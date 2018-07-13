@@ -48,6 +48,16 @@ required: true
 }
 );
 
+UserSchema.methods.removeToken = function (token) {
+  var user = this;
+
+  return user.update({
+    $pull: {
+      tokens: {token}
+    }
+  });
+};
+
 UserSchema.methods.toJSON = function() {
 var user = this ;
 var userObject = user.toObject(); // converting to regular object with properties of the documents exist. Else mongoose props also are on the user.
@@ -69,6 +79,9 @@ return user.save().then(() => {
   // returning it back to server.js file. Hence return from the function overall is the stringified version of the token
 });
 };
+
+
+
 
 //statics are Model methods. i.e. , applied on the model and not on the document.
 

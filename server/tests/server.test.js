@@ -24,6 +24,7 @@ var text = 'Test todo text'
 
   request(app)
   .post('/todos')
+  .set('x-auth',users[0].tokens[0].token)
   .send({text})
   .expect(200)
   .expect ((res) => {
@@ -44,6 +45,7 @@ var text = 'Test todo text'
 it('should not create todo with invalid body data',(done) => {
      request(app)
      .post('/todos')
+     .set('x-auth',users[0].tokens[0].token)
      .send({})
      .expect(400)
      .end((err,res) => {
@@ -72,9 +74,10 @@ it('Should retrieve data back',(done) => {
 
 request(app)
 .get('/todos')
+.set('x-auth',users[0].tokens[0].token)
 .expect(200)
 .expect((res) => {
-  expect(res.body.todos.length).toBe(2)
+  expect(res.body.todos.length).toBe(1)
 })
 .end((err,res) => {
   if (err) {
@@ -99,9 +102,10 @@ it ('Should retrieve data back and status 200 for valid ID',(done) => {
 
 request(app)
 .get('/todos/'+todos[0]._id.toHexString())
+.set('x-auth',users[0].tokens[0].token)
 .expect(200)
 .expect((res)=> {
-  expect(res.body.todo.text).toBe(todos[0].text)
+  expect(res.body.todo.text).toBe(todos.text)
 })
 .end((err,res) => {
   if (err){
@@ -119,6 +123,7 @@ it ('Should not retrieve data back and show status 404 for invalid ID',(done) =>
 
 request(app)
 .get('/todos/'+todos[0]._id.toHexString()+"11111")
+.set('x-auth',users[0].tokens[0].token)
 .expect(404)
 .end((err,res) => {
   if (err){
@@ -139,6 +144,7 @@ fail_id = new ObjectID();
 
 request(app)
 .get('/todos/'+fail_id.toHexString())
+.set('x-auth',users[0].tokens[0].token)
 .expect(404)
 .end((err,res) => {
   if (err){
@@ -165,6 +171,7 @@ var hexID = todos[0]._id.toHexString();
 
   request(app)
   .delete('/todos/'+hexID)
+  .set('x-auth',users[0].tokens[0].token)
   .expect(200)
   .expect((res)=> {
     expect(res.body.todo.text).toBe(todos[0].text)
@@ -190,6 +197,7 @@ it('Should return 404 if valid ID provided and todo not found', (done)=> {
 
   request(app)
   .delete('/todos/'+fail_id.toHexString())
+  .set('x-auth',users[0].tokens[0].token)
   .expect(404)
   .end((err,res) => {
     if (err){
@@ -205,6 +213,7 @@ it('Should return 404 if invalid ID provided', (done)=> {
 
     request(app)
     .delete('/todos/'+todos[0]._id.toHexString()+"11111")
+    .set('x-auth',users[0].tokens[0].token)
     .expect(404)
     .end((err,res) => {
       if (err){
@@ -231,6 +240,7 @@ completed = true;
 
 request(app)
 .patch('/todos/'+hexID)
+.set('x-auth',users[0].tokens[0].token)
 .send({text,completed})
 .expect(200)
 .end((err,res) =>{
@@ -255,6 +265,7 @@ completed = false;
 
 request(app)
 .patch('/todos/'+hexID)
+.set('x-auth',users[1].tokens[0].token)
 .send({text,completed})
 .expect(200)
 .end((err,res) =>{
@@ -280,6 +291,7 @@ it ('Should return 404 if valid ID provided and todo not found ',(done) => {
 
   request(app)
   .patch('/todos/'+fail_id.toHexString())
+  .set('x-auth',users[0].tokens[0].token)
   .send({text})
   .expect(404)
   .end((err,res) =>{
@@ -299,6 +311,7 @@ text = "Hello, invalid testing";
 
 request(app)
 .patch('/todos/'+hexID+"1111111")
+.set('x-auth',users[0].tokens[0].token)
 .send({text})
 .expect(404)
 .end((err,res)=> {
@@ -431,7 +444,7 @@ request(app)
   }
   User.findById(users[1]._id).then((user) => {
     expect(user).toExist();
-    expect(user.tokens[0]).toInclude({
+    expect(user.tokens[1]).toInclude({ // 1 token already exists for user as updated in seed.js
       access: 'auth',
       token: res.headers['x-auth']
 
@@ -457,7 +470,7 @@ request(app)
   }
   User.findById(users[1]._id).then((user) => {
     expect(user).toExist();
-    expect(user.tokens.length).toBe(0);
+    expect(user.tokens.length).toBe(1); // i.e. one token already exists from seed.js. New token was not added
         done();
 
   }).catch((e) => done(e));;

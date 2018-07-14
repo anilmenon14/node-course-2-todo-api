@@ -24,10 +24,11 @@ app.use(bodyParser.json())
 
 //  POST route to receive a request to upload to database
 
-app.post( '/todos', (req,res) => {
+app.post( '/todos',authenticate, (req,res) => {
 var todo = new Todo (
 {
-  text : req.body.text
+  text : req.body.text,
+  _creator : req.user._id,
 }
 )
 
@@ -36,16 +37,16 @@ todo.save().then((doc)=> {
   res.send(doc);
 },(err) => {
   res.status(400).send(err);
-  console.log("Failed to post");1
+  console.log("Failed to post");
 });
 
 
-})
+});
 
 // GET route to pull up ALL records from the database
 
-app.get('/todos',(req,res) => {
-    Todo.find().then((todos)=> {
+app.get('/todos',authenticate,(req,res) => {
+    Todo.find({ _creator : req.user._id}).then((todos)=> {
 res.send({todos}); // by using this notation , you are asking for response as an object with response text as just one of the returns, you can add more into the object
 console.log('Retrieved successfully');
     },(err) => {
@@ -56,13 +57,13 @@ console.log('Retrieved successfully');
 
 // GET record by ID
 
-app.get('/todos/:id',(req,res)=> {
+app.get('/todos/:id',authenticate,(req,res)=> {
   var id = req.params.id
   if (!ObjectID.isValid(id)){
     return res.status(404).send()
   }
-  Todo.findById(id).then((todo) => {
-    if (!todo) {
+  Todo.find({_id:id,_creator:req.user._id}).then((todo) => {
+    if (!todo[0]) {  // find sends back and array as opposed to findbyId which sends back object. Hence it is needed to check for 1st item. Only 1 is expected as it is a search by ID
       return res.status(404).send();
     }
     res.send({todo});
@@ -74,7 +75,7 @@ app.get('/todos/:id',(req,res)=> {
 
 //DELETE record by ID
 
-app.delete('/todos/:id',(req,res)=> {
+app.delete('/todos/:id',authenticate,(req,res)=> {
 // get the id
 
 var id = req.params.id;
@@ -87,7 +88,7 @@ if (!ObjectID.isValid(id)){
 
 
 // remove todo by id
-Todo.findByIdAndRemove(id).then((todo) => {
+Todo.findOneAndRemove({_id:id,_creator:req.user._id}).then((todo) => {
       if (!todo) {
         return res.status(404).send()
       }
@@ -100,7 +101,7 @@ Todo.findByIdAndRemove(id).then((todo) => {
 //Update using PATCH HTTP calls
 
 
-app.patch('/todos/:id', (req,res) => {
+app.patch('/todos/:id',authenticate, (req,res) => {
 
 var id = req.params.id;
 var body = _.pick(req.body,['text','completed']);  // This lodash function helps define which fields can be updated by user using HTTP calls . Limited to text and completed status. Does not allow 'completedAt' to be changed.
@@ -115,10 +116,9 @@ if (_.isBoolean(body.completed) && body.completed) {
   body.completed = false;
   body.completedAt  = null;
 };
-
 // Can also use findByIdAndUpdate which takes id directly as first param
 Todo.findOneAndUpdate(
-     {_id : id}
+     {_id:id,_creator:req.user._id}
     ,{$set :body}
     ,{new: true} // Option required to ensure updated one is returned
 ).then((todo) => {

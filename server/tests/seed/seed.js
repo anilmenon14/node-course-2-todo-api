@@ -23,16 +23,22 @@ tokens : [{
   _id : userTwoID,
   email_address :"Jm@dt.com",
   password : "dtforever",
+  tokens : [{
+    access : 'auth',
+    token : jwt.sign({_id : userTwoID ,access : 'auth'},'abc123').toString()
+  }]
 }];
 
 const todos = [{
   _id: new ObjectID(),
-  text : 'First test todo'
+  text : 'First test todo',
+  _creator : userOneID,
 },{
   _id: new ObjectID(),
   text : 'Second test todo',
   completed: true,
   completedAt : 1224838373,
+  _creator : userTwoID
 }]
 
 

@@ -20,8 +20,11 @@ var Todo = mongoose.model('Todo',{
 // props of completedAt
    type : Number,
    default : null,
-
- }
+ },
+_creator: {
+  type: mongoose.Schema.Types.ObjectId, // 'Invalid value for schema path' error will be thrown if type is specified as ObjectID (instead of ObjectId) or type isn't specified
+  required: true,
+ },
 })
 
 // // **example of creating new document**

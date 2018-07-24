@@ -15,7 +15,7 @@ email_address :"Jp@dt.com",
 password : "dtforlife",
 tokens : [{
   access : 'auth',
-  token : jwt.sign({_id : userOneID ,access : 'auth'},'abc123').toString()
+  token : jwt.sign({_id : userOneID ,access : 'auth'},process.env.JWT_SECRET).toString()
 }]
 },{
   first_name : "John",
@@ -25,7 +25,7 @@ tokens : [{
   password : "dtforever",
   tokens : [{
     access : 'auth',
-    token : jwt.sign({_id : userTwoID ,access : 'auth'},'abc123').toString()
+    token : jwt.sign({_id : userTwoID ,access : 'auth'}, process.env.JWT_SECRET).toString()
   }]
 }];
 

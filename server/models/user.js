@@ -70,7 +70,7 @@ return _.pick(userObject, ['_id','first_name','last_name','email_address'])
 UserSchema.methods.generateAuthToken = function () {
 var user = this; // defining the context of 'this' in the function
 var access = 'auth';
-var token = jwt.sign({_id : user._id.toHexString(),access},'abc123').toString(); //abc123 is predefined salt
+var token = jwt.sign({_id : user._id.toHexString(),access},process.env.JWT_SECRET).toString(); //abc123 is predefined salt
 
 user.tokens = user.tokens.concat([{access, token}]);
 
@@ -89,7 +89,7 @@ UserSchema.statics.findByToken = function (token) {
   var User = this;
   var decoded;
   try {
-    decoded = jwt.verify(token,'abc123'); // abc123 is salt defined above
+    decoded = jwt.verify(token,process.env.JWT_SECRET); // abc123 is salt defined above
   }
   catch (e) {
     // this block below ensures a reject is sent back as a Promise

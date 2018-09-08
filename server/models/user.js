@@ -72,7 +72,7 @@ var user = this; // defining the context of 'this' in the function
 var access = 'auth';
 var token = jwt.sign({_id : user._id.toHexString(),access},process.env.JWT_SECRET).toString(); //abc123 is predefined salt
 
-user.tokens = user.tokens.concat([{access, token}]);
+user.tokens = user.tokens.concat([{access, token}]);  // Ensures that new token is added if existing one already is present
 
 return user.save().then(() => {
   return token;
